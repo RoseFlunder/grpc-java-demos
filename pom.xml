@@ -29,6 +29,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <modules>
+		<!--
         <module>simple-grpc-server</module>
         <module>simple-grpc-client</module>
         <module>streaming-server</module>
@@ -37,9 +38,8 @@
         <module>chat-javafx-client</module>
         <module>metadata-context-example</module>
         <module>zipkin-prometheus-example</module>
-        <!--
+		-->
         <module>springboot</module>
-        -->
     </modules>
 
     <dependencies>

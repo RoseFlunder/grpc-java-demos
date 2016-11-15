@@ -16,20 +16,23 @@
 
 package com.example.grpc.springboot;
 
-import com.example.echo.EchoOuterClass;
-import com.example.echo.EchoServiceGrpc;
-import io.grpc.stub.StreamObserver;
 import org.springframework.boot.autoconfigure.grpc.server.GrpcService;
+
+import com.example.echo.EchoOuterClass.Echo;
+import com.example.echo.EchoServiceGrpc;
+
+import io.grpc.stub.StreamObserver;
 
 /**
  * Created by rayt on 5/18/16.
  */
-@GrpcService(EchoServiceGrpc.class)
-public class EchoServiceImpl implements EchoServiceGrpc.EchoService {
-  @Override
-  public void echo(EchoOuterClass.Echo request, StreamObserver<EchoOuterClass.Echo> responseObserver) {
-    System.out.println(request);
-    responseObserver.onNext(request);
-    responseObserver.onCompleted();
-  }
+@GrpcService(EchoServiceGrpc.EchoServiceImplBase.class)
+public class EchoServiceImpl extends EchoServiceGrpc.EchoServiceImplBase  {
+
+	@Override
+	public void echo(Echo request, StreamObserver<Echo> responseObserver) {
+		System.out.println(request);
+	    responseObserver.onNext(request);
+	    responseObserver.onCompleted();
+	}
 }

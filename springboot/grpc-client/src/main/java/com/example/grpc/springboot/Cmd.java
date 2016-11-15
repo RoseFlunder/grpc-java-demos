@@ -16,14 +16,16 @@
 
 package com.example.grpc.springboot;
 
-import com.example.echo.EchoOuterClass;
-import com.example.echo.EchoServiceGrpc;
-import io.grpc.Channel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.autoconfigure.grpc.client.GrpcChannelFactory;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.stereotype.Component;
+
+import com.example.echo.EchoOuterClass;
+import com.example.echo.EchoServiceGrpc;
+
+import io.grpc.Channel;
 
 /**
  * Created by rayt on 5/18/16.
@@ -31,23 +33,27 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableDiscoveryClient
 public class Cmd {
-  @Autowired
-  public Cmd(ApplicationArguments args, GrpcChannelFactory channelFactory) {
-    System.out.println("hello");
+	@Autowired
+	public Cmd(ApplicationArguments args, GrpcChannelFactory channelFactory) {
+		System.out.println("hello");
 
-    Channel channel = channelFactory.createChannel("EchoService");
+		Channel channel = channelFactory.createChannel("EchoService");
+		
+//		ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 8080)
+//		        .usePlaintext(true)
+//		.build();
 
-    int i = 0;
-    while (true) {
-      EchoServiceGrpc.EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
-      EchoOuterClass.Echo response = stub.echo(EchoOuterClass.Echo.newBuilder().setMessage("Hello " + i).build());
-      System.out.println(response);
-      i++;
+		int i = 0;
+		while (true) {
+			EchoServiceGrpc.EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
+			EchoOuterClass.Echo response = stub.echo(EchoOuterClass.Echo.newBuilder().setMessage("Hello " + i).build());
+			System.out.println(response);
+			i++;
 
-      try {
-        Thread.sleep(100L);
-      } catch (InterruptedException e) {
-      }
-    }
-  }
+			try {
+				Thread.sleep(100L);
+			} catch (InterruptedException e) {
+			}
+		}
+	}
 }

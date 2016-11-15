@@ -16,8 +16,6 @@
 
 package com.example.grpc.springboot;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
@@ -30,7 +28,7 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableEurekaClient
 public class GrpcClient {
-  public static void main(String[] args) {
-    SpringApplication.run(GrpcClient.class, args);
-  }
+	public static void main(String[] args) {
+		SpringApplication.run(GrpcClient.class, args);
+	}
 }
