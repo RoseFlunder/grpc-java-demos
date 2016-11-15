@@ -18,7 +18,6 @@ package com.example.grpc.springboot;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.grpc.client.DiscoveryClientResolverFactory;
 import org.springframework.boot.autoconfigure.grpc.client.GrpcChannelFactory;
 import org.springframework.cloud.client.ServiceInstance;
@@ -29,9 +28,14 @@ import org.springframework.stereotype.Component;
 import com.example.echo.EchoOuterClass;
 import com.example.echo.EchoServiceGrpc;
 
+import io.grpc.CallOptions;
 import io.grpc.Channel;
+import io.grpc.ClientCall;
+import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.MethodDescriptor;
+import io.grpc.util.RoundRobinLoadBalancerFactory;
 
 /**
  * Created by rayt on 5/18/16.
@@ -41,7 +45,7 @@ import io.grpc.ManagedChannelBuilder;
 public class Cmd {
 	
 	@Autowired
-	public Cmd(ApplicationArguments args, DiscoveryClient client) {
+	public Cmd(ApplicationArguments args, GrpcChannelFactory channelFactory, DiscoveryClient client) {
 		System.out.println("hello");
 
 		//if client.getIstances is not called before here, the DiscoveryClientNameResolver will stop working when it
@@ -51,22 +55,32 @@ public class Cmd {
 			System.out.println(serviceInstance.getServiceId() + ":" + serviceInstance.getPort());
 		}
 		
+		
+		//Using manahged channel builder directly instead of channel factory from auto configurer just to
+		//be sure that the bug above has nothing to do with other spring magic
 		ManagedChannel channel = ManagedChannelBuilder.forTarget("EchoService")
 				.nameResolverFactory(new DiscoveryClientResolverFactory(client))
+				.loadBalancerFactory(RoundRobinLoadBalancerFactory.getInstance())
 				.usePlaintext(true)
 				.build();
-
+		
+		EchoServiceGrpc.EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
+		
 		int i = 0;
 		while (true) {
-			EchoServiceGrpc.EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
-			EchoOuterClass.Echo response = stub.echo(EchoOuterClass.Echo.newBuilder().setMessage("Hello " + i).build());
-			System.out.println(response);
-			i++;
-
 			try {
-				Thread.sleep(100L);
-			} catch (InterruptedException e) {
+				EchoOuterClass.Echo response = stub.echo(EchoOuterClass.Echo.newBuilder().setMessage("Hello " + i).build());
+				System.out.println(response);
+				i++;
+
+				try {
+					Thread.sleep(100L);
+				} catch (InterruptedException e) {
+				}
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
 			}
+			
 		}
 	}
 }
