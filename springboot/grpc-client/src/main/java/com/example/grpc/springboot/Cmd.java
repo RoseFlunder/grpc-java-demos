@@ -18,7 +18,11 @@ package com.example.grpc.springboot;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.grpc.client.DiscoveryClientResolverFactory;
 import org.springframework.boot.autoconfigure.grpc.client.GrpcChannelFactory;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +30,8 @@ import com.example.echo.EchoOuterClass;
 import com.example.echo.EchoServiceGrpc;
 
 import io.grpc.Channel;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 
 /**
  * Created by rayt on 5/18/16.
@@ -33,15 +39,22 @@ import io.grpc.Channel;
 @Component
 @EnableDiscoveryClient
 public class Cmd {
+	
 	@Autowired
-	public Cmd(ApplicationArguments args, GrpcChannelFactory channelFactory) {
+	public Cmd(ApplicationArguments args, DiscoveryClient client) {
 		System.out.println("hello");
 
-		Channel channel = channelFactory.createChannel("EchoService");
+		//if client.getIstances is not called before here, the DiscoveryClientNameResolver will stop working when it
+		//tries to call client.getInstances himself
+		//why does it work when i call it here before once?
+		for (ServiceInstance serviceInstance : client.getInstances("EchoService")) {
+			System.out.println(serviceInstance.getServiceId() + ":" + serviceInstance.getPort());
+		}
 		
-//		ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 8080)
-//		        .usePlaintext(true)
-//		.build();
+		ManagedChannel channel = ManagedChannelBuilder.forTarget("EchoService")
+				.nameResolverFactory(new DiscoveryClientResolverFactory(client))
+				.usePlaintext(true)
+				.build();
 
 		int i = 0;
 		while (true) {
