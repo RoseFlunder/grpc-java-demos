@@ -18,24 +18,14 @@ package com.example.grpc.springboot;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.autoconfigure.grpc.client.DiscoveryClientResolverFactory;
 import org.springframework.boot.autoconfigure.grpc.client.GrpcChannelFactory;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.stereotype.Component;
 
 import com.example.echo.EchoOuterClass;
 import com.example.echo.EchoServiceGrpc;
 
-import io.grpc.CallOptions;
 import io.grpc.Channel;
-import io.grpc.ClientCall;
-import io.grpc.ClientInterceptor;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.MethodDescriptor;
-import io.grpc.util.RoundRobinLoadBalancerFactory;
 
 /**
  * Created by rayt on 5/18/16.
@@ -45,25 +35,10 @@ import io.grpc.util.RoundRobinLoadBalancerFactory;
 public class Cmd {
 	
 	@Autowired
-	public Cmd(ApplicationArguments args, GrpcChannelFactory channelFactory, DiscoveryClient client) {
+	public Cmd(ApplicationArguments args, GrpcChannelFactory channelFactory) {
 		System.out.println("hello");
-
-		//if client.getIstances is not called before here, the DiscoveryClientNameResolver will stop working when it
-		//tries to call client.getInstances himself
-		//why does it work when i call it here before once?
-		for (ServiceInstance serviceInstance : client.getInstances("EchoService")) {
-			System.out.println(serviceInstance.getServiceId() + ":" + serviceInstance.getPort());
-		}
 		
-		
-		//Using manahged channel builder directly instead of channel factory from auto configurer just to
-		//be sure that the bug above has nothing to do with other spring magic
-		ManagedChannel channel = ManagedChannelBuilder.forTarget("EchoService")
-				.nameResolverFactory(new DiscoveryClientResolverFactory(client))
-				.loadBalancerFactory(RoundRobinLoadBalancerFactory.getInstance())
-				.usePlaintext(true)
-				.build();
-		
+		Channel channel = channelFactory.createChannel("EchoService");
 		EchoServiceGrpc.EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
 		
 		int i = 0;
