@@ -49,7 +49,7 @@ public class Cmd {
 				i++;
 
 				try {
-					Thread.sleep(100L);
+					Thread.sleep(2000L);
 				} catch (InterruptedException e) {
 				}
 			} catch (Exception e) {
