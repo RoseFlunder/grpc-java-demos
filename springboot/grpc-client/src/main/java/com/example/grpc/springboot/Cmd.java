@@ -18,6 +18,7 @@ package com.example.grpc.springboot;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.grpc.client.GrpcChannelFactory;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.stereotype.Component;
@@ -32,12 +33,17 @@ import io.grpc.Channel;
  */
 @Component
 @EnableDiscoveryClient
-public class Cmd {
+public class Cmd implements CommandLineRunner {
 	
+	private final GrpcChannelFactory channelFactory;
+
 	@Autowired
 	public Cmd(ApplicationArguments args, GrpcChannelFactory channelFactory) {
-		System.out.println("hello");
-		
+		this.channelFactory = channelFactory;
+	}
+
+	@Override
+	public void run(String... args) throws Exception {		
 		Channel channel = channelFactory.createChannel("EchoService");
 		EchoServiceGrpc.EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
 		
@@ -55,7 +61,6 @@ public class Cmd {
 			} catch (Exception e) {
 				System.err.println(e.getMessage());
 			}
-			
 		}
 	}
 }
