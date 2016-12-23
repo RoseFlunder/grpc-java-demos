@@ -16,6 +16,8 @@
 
 package com.example.grpc.springboot;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.CommandLineRunner;
@@ -23,10 +25,12 @@ import org.springframework.boot.autoconfigure.grpc.client.GrpcChannelFactory;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.stereotype.Component;
 
-import com.example.echo.EchoOuterClass;
+import com.example.echo.EchoOuterClass.Echo;
 import com.example.echo.EchoServiceGrpc;
+import com.example.echo.EchoServiceGrpc.EchoServiceStub;
 
 import io.grpc.Channel;
+import io.grpc.stub.StreamObserver;
 
 /**
  * Created by rayt on 5/18/16.
@@ -45,22 +49,46 @@ public class Cmd implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {		
 		Channel channel = channelFactory.createChannel("EchoService");
-		EchoServiceGrpc.EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
+//		EchoServiceGrpc.EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
+//		
+//		int i = 0;
+//		while (true) {
+//			try {
+//				EchoOuterClass.Echo response = stub.echo(EchoOuterClass.Echo.newBuilder().setMessage("Hello " + i).build());
+//				System.out.println(response);
+//				i++;
+//
+//				try {
+//					Thread.sleep(2000L);
+//				} catch (InterruptedException e) {
+//				}
+//			} catch (Exception e) {
+//				System.err.println(e.getMessage());
+//			}
+//		}
 		
-		int i = 0;
-		while (true) {
-			try {
-				EchoOuterClass.Echo response = stub.echo(EchoOuterClass.Echo.newBuilder().setMessage("Hello " + i).build());
-				System.out.println(response);
-				i++;
+		CountDownLatch latch = new CountDownLatch(1);
+		EchoServiceStub stub = EchoServiceGrpc.newStub(channel);
+		stub.echo(Echo.newBuilder().setMessage("Hello").build(), new StreamObserver<Echo>() {
 
-				try {
-					Thread.sleep(2000L);
-				} catch (InterruptedException e) {
-				}
-			} catch (Exception e) {
-				System.err.println(e.getMessage());
+			@Override
+			public void onNext(Echo value) {
+				System.out.println(value.getMessage());
 			}
-		}
+
+			@Override
+			public void onError(Throwable t) {
+				latch.countDown();
+				
+			}
+
+			@Override
+			public void onCompleted() {
+				System.out.println("Finished");
+				latch.countDown();
+			}
+		});
+		
+		latch.await();
 	}
 }
