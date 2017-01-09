@@ -26,7 +26,7 @@ import io.grpc.stub.StreamObserver;
 /**
  * Created by rayt on 5/18/16.
  */
-@GrpcService(EchoServiceGrpc.EchoServiceImplBase.class)
+@GrpcService
 public class EchoServiceImpl extends EchoServiceGrpc.EchoServiceImplBase  {
 
 	@Override
