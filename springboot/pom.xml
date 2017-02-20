@@ -15,7 +15,7 @@
 
     <properties>
         <spring.boot.version>1.4.2.RELEASE</spring.boot.version>
-        <spring.cloud.version>Camden.SR2</spring.cloud.version>
+        <spring.cloud.version>Camden.SR5</spring.cloud.version>
     </properties>
 
     <dependencyManagement>

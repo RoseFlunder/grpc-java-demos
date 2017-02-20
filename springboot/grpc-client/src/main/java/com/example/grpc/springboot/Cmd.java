@@ -49,45 +49,31 @@ public class Cmd implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {		
 		Channel channel = channelFactory.createChannel("EchoService");
-//		EchoServiceGrpc.EchoServiceBlockingStub stub = EchoServiceGrpc.newBlockingStub(channel);
-//		
-//		int i = 0;
-//		while (true) {
-//			try {
-//				EchoOuterClass.Echo response = stub.echo(EchoOuterClass.Echo.newBuilder().setMessage("Hello " + i).build());
-//				System.out.println(response);
-//				i++;
-//
-//				try {
-//					Thread.sleep(2000L);
-//				} catch (InterruptedException e) {
-//				}
-//			} catch (Exception e) {
-//				System.err.println(e.getMessage());
-//			}
-//		}
 		
 		CountDownLatch latch = new CountDownLatch(1);
 		EchoServiceStub stub = EchoServiceGrpc.newStub(channel);
-		stub.echo(Echo.newBuilder().setMessage("Hello").build(), new StreamObserver<Echo>() {
+		
+		for (int i = 0; i < 10; ++i) {
+			stub.echo(Echo.newBuilder().setMessage("Hello" + i).build(), new StreamObserver<Echo>() {
 
-			@Override
-			public void onNext(Echo value) {
-				System.out.println(value.getMessage());
-			}
+				@Override
+				public void onNext(Echo value) {
+					System.out.println(value.getMessage());
+				}
 
-			@Override
-			public void onError(Throwable t) {
-				latch.countDown();
-				
-			}
+				@Override
+				public void onError(Throwable t) {
+					latch.countDown();
+					
+				}
 
-			@Override
-			public void onCompleted() {
-				System.out.println("Finished");
-				latch.countDown();
-			}
-		});
+				@Override
+				public void onCompleted() {
+					System.out.println("Finished");
+					latch.countDown();
+				}
+			});
+		}
 		
 		latch.await();
 	}
